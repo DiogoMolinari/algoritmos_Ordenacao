@@ -1,4 +1,5 @@
 Algoritmos de Ordenação em Python
+
 ☕ Descrição
 Este projeto tem como objetivo implementar e testar diferentes algoritmos de ordenação em Python, permitindo comparar o desempenho e visualizar o comportamento de cada um.
 
