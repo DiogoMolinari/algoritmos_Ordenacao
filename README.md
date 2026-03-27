@@ -19,6 +19,7 @@ Geração de gráficos para visualização dos resultados.
 🛠️ Tecnologias
 
 Python
+
 Bibliotecas: matplotlib, time, numpy, math e statistics
 
 📚 Conceitos Aplicados
