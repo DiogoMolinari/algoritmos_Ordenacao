@@ -1,0 +1,127 @@
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+import statistics
+
+# -----------------------------
+# Algoritmos de ordenação
+# -----------------------------
+def bubble_sort(arr):
+    n = len(arr)
+    for i in range(n):
+        trocou = False
+        for j in range(0, n - i - 1):
+            if arr[j] > arr[j + 1]:
+                arr[j], arr[j + 1] = arr[j + 1], arr[j]
+                trocou = True
+        # Melhor caso (já ordenado): sai cedo
+        if not trocou:
+            break
+
+def insertion_sort(arr):
+    for i in range(1, len(arr)):
+        key = arr[i]
+        j = i - 1
+        while j >= 0 and key < arr[j]:
+            arr[j + 1] = arr[j]
+            j -= 1
+        arr[j + 1] = key
+
+def merge_sort(arr):
+    if len(arr) > 1:
+        mid = len(arr)//2
+        L = arr[:mid]
+        R = arr[mid:]
+        merge_sort(L)
+        merge_sort(R)
+        i = j = k = 0
+        while i < len(L) and j < len(R):
+            if L[i] < R[j]:
+                arr[k] = L[i]
+                i += 1
+            else:
+                arr[k] = R[j]
+                j += 1
+            k += 1
+        while i < len(L):
+            arr[k] = L[i]
+            i += 1
+            k += 1
+        while j < len(R):
+            arr[k] = R[j]
+            j += 1
+            k += 1
+
+# -----------------------------
+# Função de medição de tempo
+# -----------------------------
+def medir_tempo(sort_func, arr, repeticoes=3):
+    tempos = []
+    for _ in range(repeticoes):
+        arr_copy = arr.copy()
+        start = time.perf_counter()
+        sort_func(arr_copy)
+        tempos.append(time.perf_counter() - start)
+    return statistics.mean(tempos)
+
+# -----------------------------
+# Configuração dos testes
+# -----------------------------
+sizes = list(range(100, 1001, 50))
+repeticoes = 3
+
+tempos = {'Bubble': [], 'Insertion': [], 'Merge': []}
+
+# -----------------------------
+# Execução dos testes (melhor caso)
+# -----------------------------
+for size in sizes:
+    arr_ordenado = list(range(size))  # lista já ordenada
+
+    tempos['Bubble'].append(medir_tempo(bubble_sort, arr_ordenado, repeticoes))
+    tempos['Insertion'].append(medir_tempo(insertion_sort, arr_ordenado, repeticoes))
+    tempos['Merge'].append(medir_tempo(merge_sort, arr_ordenado, repeticoes))
+
+# -----------------------------
+# Função de ajuste (fit)
+# -----------------------------
+def fit_curve(x, y, degree=2):
+    """Ajuste polinomial no log dos dados"""
+    coeffs = np.polyfit(np.log10(x), np.log10(y), degree)
+    poly = np.poly1d(coeffs)
+    return poly
+
+# -----------------------------
+# Gráfico único (melhor caso)
+# -----------------------------
+plt.figure(figsize=(10,6))
+for nome, cor, teorico in zip(
+    ['Bubble', 'Insertion', 'Merge'],
+    ['r', 'g', 'b'],
+    ['n²', 'n²', 'n log n']
+):
+    y = np.array(tempos[nome])
+    x = np.array(sizes)
+
+    # Scatter (dados experimentais)
+    plt.semilogy(x, y, 'o', color=cor, label=f'{nome} Sort (exp)')
+
+    # Fit experimental (curva sólida)
+    poly = fit_curve(x, y, degree=2 if nome != 'Merge' else 1)
+    y_fit = 10**poly(np.log10(x))
+    plt.semilogy(x, y_fit, '-', color=cor)
+
+    # Curva teórica esperada (tracejada)
+    if teorico == 'n²':
+        y_teorico = x**2
+    elif teorico == 'n log n':
+        y_teorico = x * np.log2(x)
+    y_teorico = y_teorico / max(y_teorico) * max(y)
+    plt.semilogy(x, y_teorico, '--', color=cor, alpha=0.6, label=f'{nome} teórico O({teorico})')
+
+plt.xlabel('Tamanho da lista (n)')
+plt.ylabel('Tempo (s)')
+plt.title('Desempenho dos algoritmos de ordenação (lista ordenada)')
+plt.legend()
+plt.grid(True)
+plt.show()
